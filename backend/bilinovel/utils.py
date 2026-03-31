@@ -1,5 +1,7 @@
-from backend.rubbish_secret_map import rubbish_secret_map, blank_list
 from bs4 import BeautifulSoup
+
+from backend.rubbish_secret_map import blank_list, rubbish_secret_map
+
 
 def get_container_html():
     text_html = """<?xml version="1.0" encoding="UTF-8"?>
@@ -9,6 +11,7 @@ def get_container_html():
    </rootfiles>
 </container>"""
     return text_html
+
 
 def get_cover_html(img_w, img_h):
     text_html = f"""<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
@@ -28,6 +31,7 @@ def get_cover_html(img_w, img_h):
 </html>"""
     return text_html
 
+
 def text2htmls(chap_name, text):
     text_html = f"""<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
@@ -43,6 +47,7 @@ def text2htmls(chap_name, text):
 </body>
 </html>"""
     return text_html
+
 
 def get_toc_html(title, chap_names):
     toc_html_template = """<?xml version="1.0" encoding="utf-8"?>
@@ -69,15 +74,27 @@ def get_toc_html(title, chap_names):
     </navLabel>
     <content src="Text/{chap_no}.xhtml"/>
     </navPoint>"""
-    nav_points = '\n'.join(
-        nav_point_template.format(nav_id=i+1, play_order=i+1, chap_name=chap_name, chap_no=str(i).zfill(2))
+    nav_points = "\n".join(
+        nav_point_template.format(
+            nav_id=i + 1, play_order=i + 1, chap_name=chap_name, chap_no=str(i).zfill(2)
+        )
         for i, chap_name in enumerate(chap_names)
     )
     return toc_html_template.format(title=title, nav_points=nav_points)
 
 
-
-def get_content_html(book_name, volume_name, volume_no, author, publisher, brief, tag_list, num_chap, num_img, img_exist=False):
+def get_content_html(
+    book_name,
+    volume_name,
+    volume_no,
+    author,
+    publisher,
+    brief,
+    tag_list,
+    num_chap,
+    num_img,
+    img_exist=False,
+):
     content_html_template = """<?xml version="1.0" encoding="utf-8"?>
 <package version="2.0" unique-identifier="BookId" xmlns="http://www.idpf.org/2007/opf">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
@@ -108,47 +125,53 @@ def get_content_html(book_name, volume_name, volume_no, author, publisher, brief
   </guide>
 </package>"""
 
-    subjects = '\n'.join(f'    <dc:subject>{tag}</dc:subject>' for tag in tag_list)
-    chapters = '\n'.join(
+    subjects = "\n".join(f"    <dc:subject>{tag}</dc:subject>" for tag in tag_list)
+    chapters = "\n".join(
         f'    <item id="x{str(chap_no).zfill(2)}.xhtml" href="Text/{str(chap_no).zfill(2)}.xhtml" media-type="application/xhtml+xml"/>'
         for chap_no in range(num_chap)
     )
-    images = '\n'.join(
+    images = "\n".join(
         f'    <item id="x{str(img_no).zfill(2)}.jpg" href="Images/{str(img_no).zfill(2)}.jpg" media-type="image/jpeg"/>'
         for img_no in range(num_img)
     )
-    spine_chapters = '\n'.join(
+    spine_chapters = "\n".join(
         f'    <itemref idref="x{str(chap_no).zfill(2)}.xhtml"/>'
         for chap_no in range(num_chap)
     )
 
-    xcolor = '    <item id="xcolor" href="Text/color.xhtml" media-type="application/xhtml+xml"/>\n' if img_exist else ''
-    spine_xcolor = '    <itemref idref="xcolor"/>\n' if img_exist else ''
+    xcolor = (
+        '    <item id="xcolor" href="Text/color.xhtml" media-type="application/xhtml+xml"/>\n'
+        if img_exist
+        else ""
+    )
+    spine_xcolor = '    <itemref idref="xcolor"/>\n' if img_exist else ""
 
     return content_html_template.format(
         series_name=book_name,
-        series_no = volume_no,
-        title=book_name+'-'+volume_name,
+        series_no=volume_no,
+        title=book_name + "-" + volume_name,
         author=author,
         publisher=publisher,
-        brief = brief,
+        brief=brief,
         subjects=subjects,
         chapters=chapters,
         images=images,
         xcolor=xcolor,
         spine_xcolor=spine_xcolor,
-        spine_chapters=spine_chapters
+        spine_chapters=spine_chapters,
     )
+
 
 def check_chars(win_chars):
     win_illegal_chars = '?*"<>|:/'
-    new_chars = ''
+    new_chars = ""
     for char in win_chars:
         if char in win_illegal_chars:
-            new_chars += '\u25A0'
+            new_chars += "\u25a0"
         else:
             new_chars += char
     return new_chars
+
 
 # def replace_rubbish_text(content_html):
 #     soup = BeautifulSoup(content_html, 'html.parser')
@@ -169,17 +192,18 @@ def check_chars(win_chars):
 
 chinese_punctuation = "，。！？、；：“”‘’（）《》〈〉【】『』〖〗…—～＋－＝×÷·—‘’“”『』【】（）《》〈〉「」『』〖〗〘〙〚〛〚〛〘〙〖〗〘〙〚〛〘〙〖〗〘〙"
 
+
 def replace_rubbish_text(content_html):
-    soup = BeautifulSoup(content_html, 'html.parser')
-    ps = soup.find_all('p')
+    soup = BeautifulSoup(content_html, "html.parser")
+    ps = soup.find_all("p")
     if not ps:
         return str(soup)
 
     for i in range(-1, max(-len(ps) - 1, -10), -1):
-      last_p = ps[i]
-      text = last_p.get_text()
-      if text != '':
-          break
+        last_p = ps[i]
+        text = last_p.get_text()
+        if text != "":
+            break
     sb = []
     for blank_char in text:
         replace_strr = rubbish_secret_map.get(blank_char)
@@ -187,5 +211,6 @@ def replace_rubbish_text(content_html):
             sb.append(replace_strr)
         elif blank_char in chinese_punctuation:
             sb.append(blank_char)
-    last_p.string = ''.join(sb)
+    last_p.string = "".join(sb)
     return str(soup)
+
