@@ -42,7 +42,7 @@ class Editer(object):
         self.color_page_name = "彩页"
         self.html_buffer = dict()
 
-        path = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"  # 请改为你电脑内Chrome可执行文件路径
+        path = r"/usr/bin/chromium"  # 请改为你电脑内Chrome可执行文件路径
         co = ChromiumOptions().set_browser_path(path)
         self.tab = Chromium(co).latest_tab
 
@@ -549,4 +549,3 @@ class Editer(object):
     #     filename = 'buffer.pkl'
     #     filepath = os.path.join(self.temp_path, filename)
     #     return os.path.isfile(filepath)
-
